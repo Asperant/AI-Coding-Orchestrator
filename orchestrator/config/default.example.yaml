@@ -1,0 +1,4 @@
+ai_brain_path: ../../ai-brain
+reports_dir: reports
+phase: 1
+read_only: true
