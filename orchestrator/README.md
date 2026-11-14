@@ -203,6 +203,8 @@ export AI_BRAIN_PATH=/path/to/AI-Brain
 Important configuration rules:
 
 - project paths must be inside approved roots
+- approved paths must be configured as a list of non-empty strings (empty approved_paths list is valid; null, numbers, and whitespace-only values are rejected with an actionable error naming the config file and 1-based item index without exposing the invalid value)
+- relative paths in configuration are resolved against the directory of the selected configuration file
 - AI-Brain path is read-only by default
 - report output stays under the orchestrator’s `reports/` directory
 

@@ -73,10 +73,15 @@ def load_config() -> dict[str, Any]:
     if not isinstance(approved_paths, list):
         raise ConfigError("Config value approved_paths must be a list in config/approved_paths.yaml (or config/approved_paths.local.yaml).")
 
-    resolved_approved_paths = [
-        str(_resolve_configured_path(path, approved_paths_config_path.parent))
-        for path in approved_paths
-    ]
+    resolved_approved_paths: list[str] = []
+    for idx, path in enumerate(approved_paths, start=1):
+        if not isinstance(path, str) or not path.strip():
+            raise ConfigError(
+                f"Invalid approved_paths entry at index {idx} in {approved_paths_config_path}: entry must be a non-empty string"
+            )
+        resolved_approved_paths.append(
+            str(_resolve_configured_path(path, approved_paths_config_path.parent))
+        )
 
     loaded_config = dict(default_config)
     loaded_config["ai_brain_path"] = str(resolved_ai_brain_path)

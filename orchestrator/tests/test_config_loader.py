@@ -173,3 +173,51 @@ class LoadConfigTests(TestCase):
 
         self.assertEqual(loaded_config["ai_brain_path"], str(override_ai_brain.resolve()))
         self.assertEqual(loaded_config["approved_paths"], [str(override_ai_brain.resolve())])
+
+    def test_approved_paths_empty_list_is_valid(self) -> None:
+        self.write_default_config(self.ai_brain_path)
+        self.write_approved_paths_config("approved_paths: []\n")
+
+        loaded_config = config_loader.load_config()
+        self.assertEqual(loaded_config["approved_paths"], [])
+
+    def test_invalid_approved_paths_number_raises_config_error_without_value(self) -> None:
+        self.write_default_config(self.ai_brain_path)
+        secret_number = 12345
+        self.write_approved_paths_config(
+            f"approved_paths:\n  - {self.ai_brain_path}\n  - {secret_number}\n"
+        )
+
+        with self.assertRaises(config_loader.ConfigError) as ctx:
+            config_loader.load_config()
+
+        msg = str(ctx.exception)
+        self.assertIn("Invalid approved_paths entry at index 2", msg)
+        self.assertIn(str(self.approved_paths_config_path), msg)
+        self.assertNotIn(str(secret_number), msg)
+
+    def test_invalid_approved_paths_null_raises_config_error_without_value(self) -> None:
+        self.write_default_config(self.ai_brain_path)
+        self.write_approved_paths_config("approved_paths:\n  - null\n")
+
+        with self.assertRaises(config_loader.ConfigError) as ctx:
+            config_loader.load_config()
+
+        msg = str(ctx.exception)
+        self.assertIn("Invalid approved_paths entry at index 1", msg)
+        self.assertIn(str(self.approved_paths_config_path), msg)
+        self.assertNotIn("null", msg.lower())
+        self.assertNotIn("none", msg.lower())
+
+    def test_invalid_approved_paths_whitespace_raises_config_error_without_value(self) -> None:
+        self.write_default_config(self.ai_brain_path)
+        secret_whitespace = "   "
+        self.write_approved_paths_config(f'approved_paths:\n  - "{secret_whitespace}"\n')
+
+        with self.assertRaises(config_loader.ConfigError) as ctx:
+            config_loader.load_config()
+
+        msg = str(ctx.exception)
+        self.assertIn("Invalid approved_paths entry at index 1", msg)
+        self.assertIn(str(self.approved_paths_config_path), msg)
+
